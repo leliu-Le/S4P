@@ -1,0 +1,218 @@
+   .language{
+      font-family:"Helvetica";
+      font-style: normal; 
+      font-size: 12px;
+      color: #c21004;  
+      text-align:right;
+      margin-bottom: -20px;
+    
+    }
+
+ 
+ h1 {
+      font-family: "Asul", serif;
+      font-weight: 700;
+      font-style: normal;
+      color: #c21004;
+      font-size: 40px;
+      text-align: center;
+      margin-bottom: -35px;
+      border-top: 1px solid  #c21004;
+      border-bottom: 1px solid  #c21004;
+      padding:10px;
+       
+    
+    
+    
+
+      
+    }
+
+    body{
+    background-color:whitesmoke;
+    margin-top: 2%;
+    margin-left: 2%;
+    margin-right: 2%;
+
+    }
+    p{
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 20px;
+      color: #c21004;
+     
+
+    
+    }
+
+
+    .content-container{
+      display: block;
+
+    }
+
+
+
+    .bold{
+      font-family:"Asul", serif;
+      font-weight: 700;
+      font-style: normal; 
+      font-size: 20px;
+      color: #c21004;
+      margin-left:4%;
+      margin-right:4%;
+      max-width: 1300px;
+    
+    }
+
+  #h2-intro{
+    display: block;
+  }
+  
+  .h2-box{
+    display: block;
+  }
+  
+  .h2-type{
+     display: block;
+    cursor: pointer;
+     font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      padding-left: 2%;
+      text-align: left;
+      font-size: 25px;
+      color: #c21004;
+  }
+    
+    h2{
+      font-family:"Asul", serif;
+      font-weight: 700;
+      font-style: normal; 
+      font-size: 25px;
+      color: #c21004;
+      text-align: center;
+      margin-bottom: 10%;
+    }
+
+    .title{
+       font-family:"Asul", serif;
+      font-weight: 700;
+      font-style: normal; 
+      font-size: 25px;
+      color: #c21004;
+      text-align: left;
+      line-height: 95%;
+
+    }
+
+    h4{
+       font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 20px;
+      color: #c21004;
+      margin-left: 18%;
+      margin-top: -75px;
+     
+    
+    }
+
+    .bold2{
+      font-family:"Asul", serif;
+      font-weight: 700;
+      font-style: normal; 
+      font-size: 20px;
+      color: #c21004;
+      margin-bottom: 75px;
+    }
+
+    
+    .navbar {
+    display: flex;
+    height: 40px; 
+    border: 1px solid #c21004; 
+    justify-content: center;
+
+}
+
+#nav-title1:checked ~ .navbar label[for="nav-title1"],
+#nav-title2:checked ~ .navbar label[for="nav-title2"] 
+{
+    font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 24px;
+    justify-content: center;
+    align-items: center;
+    text-decoration: underline;
+    color: #c21004;
+    text-decoration: none;
+    border-right: 1px solid  #c21004;
+    transition: background 0.3s ease;
+}
+
+.h1-box{
+    font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 24px;
+    justify-content: center;
+    align-items: center;
+    color: #c21004;
+    border-right: 1px solid  #c21004;
+    transition: background 0.3s ease;
+    text-decoration: underline;
+    flex: 1;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.gate:checked{
+    background-color: var(--red);
+    color: var(--white);
+}
+
+.tab-content {
+    font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 24px;
+    display: grid; 
+    border-top: 1px solid  #c21004;
+    border-left: 1px solid  #c21004;
+    border-right: 1px solid  #c21004;
+    background:#c21004
+    min-height: 500px;
+ 
+}
+
+.tab-content.active {
+    display: block; 
+}
+    
+    
+.content-row {
+    padding: 20px;
+    font-size: 1.1rem;
+    color:  #c21004;
+    border-bottom:1px solid  #c21004; ;
+}
+
+.sub-item {
+    padding-left: 40px; 
+    font-size: 0.95rem;
+}
+
+
+.event summary{
+    margin:5%;
+    position:relative
+
+
+
+}
