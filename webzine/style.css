@@ -225,15 +225,14 @@
       
     }
 
-    #documentblock{
-      font-size: 20px;
-      margin-bottom:0;
-    }
-    
-
-    .centre{
+    .center{
       font-weight: 700;
       text-align: center;
+    }
+
+    #larger{
+      font-size: 20px;
+      margin-bottom: 0;
     }
    
     #purple{
