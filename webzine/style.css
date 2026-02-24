@@ -225,7 +225,14 @@
       
     }
 
-    #centre{
+    #block{
+      font-size: 20px;
+      margin-bottom:0;
+
+    }
+    
+
+    .centre{
       font-weight: 700;
       text-align: center;
     }
