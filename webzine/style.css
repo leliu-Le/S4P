@@ -1,12 +1,3 @@
-   .language{
-      font-family:"Helvetica";
-      font-style: normal; 
-      font-size: 12px;
-      color: #c21004;  
-      text-align:right;
-      margin-bottom: -20px;
-    
-    }
 
  
  h1 {
@@ -14,12 +5,17 @@
       font-weight: 700;
       font-style: normal;
       color: #c21004;
-      font-size: 40px;
+      font-size: 30px;
       text-align: center;
-      margin-bottom: -35px;
-      border-top: 1px solid  #c21004;
-      border-bottom: 1px solid  #c21004;
+      border: 1px solid  #c21004;
       padding:10px;
+      background-color: white;
+      width: 98%;
+    max-width: 800px;
+       margin: 0 auto; 
+       margin-top: 40px;
+       box-sizing: border-box;
+
        
     
     
@@ -28,22 +24,53 @@
       
     }
 
-    body{
-    background-color:whitesmoke;
-    margin-top: 2%;
-    margin-left: 2%;
-    margin-right: 2%;
+   body {
+   /* background-image: url("Fl9fw5zHD-AKgPdgRMwqXv1QpjDQ.jpg");
+    background-repeat: round;*/
 
-    }
-    p{
+    background-size: 200px;
+    background-attachment: fixed;
+    background-color: #c21004;
+    margin: 0;
+}
+
+.main-box {
+    background-color: white; 
+    border: 1px solid #c21004;
+    width: 98%;
+    max-width: 800px;
+    margin: 0 auto; 
+    box-sizing: border-box; 
+    margin-top: -1px;
+    border-bottom: none;
+}
+
+       
+    .navbar {
+    display: flex;
+    height: 50px;
+    border-bottom: 1px solid #c21004; 
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.navbar:last-child{
+  border-bottom:none;
+}
+
+   .h1-box:hover{
+    background-color:#c21004;
+    color: white;
+   }
+
+    .p{
       font-family:"Asul", serif;
       font-weight: 400;
       font-style: normal; 
-      font-size: 20px;
+      font-size: 16px;
       color: #c21004;
-     
-
-    
+      margin: 0;
     }
 
 
@@ -53,147 +80,270 @@
     }
 
 
-
-    .bold{
+    .intro-text{
+      display: none;
+      padding: 30px 10%;
       font-family:"Asul", serif;
-      font-weight: 700;
+      font-weight: 400;
       font-style: normal; 
-      font-size: 20px;
+      font-size: 16px;
       color: #c21004;
-      margin-left:4%;
-      margin-right:4%;
       max-width: 1300px;
     
     }
 
-  #h2-intro{
+    .gate:checked + .h2-type + .intro-text {
+      display: block;
+      border: 1px none;
+    }
+
+     .gate:checked ~ .intro-text{
+    display: block;
+     }
+
+
+    .summary-text{
+      display: none;
+      padding: 30px 10%;
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+    
+    }
+
+   
+    .gate:checked + .h2-type + .summary-text {
+      display: block;
+      border: 1px none;
+    }
+
+     .gate:checked ~ .summary-text{
+    display: block;
+     }
+
+     .discussion-text{
+       display: none;
+      padding: 30px 10%;
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+     }
+     
+     .interview-text{
+      padding: 30px 10%;
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+     }
+
+     .link-text{
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+     }
+
+     .about-text{
+      padding: 30px 10%;
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+     }
+
+     .post-text{
+      padding: 30px 10%;
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+      text-align: left;
+     }
+
+
+    .underline-text{
+      text-decoration: underline;
+      margin:0;
+     }
+
+     #spirit{
+      font-size: 20px;
+     }
+
+     #blue{
+      color: rgb(153, 117, 19);
+     }
+     
+     #image{
+      margin:0;
+     }
+
+     .bold{
+      font-weight: 700;
+     }
+
+     #rage{
+      background-color: #c21004;
+      color:white;
+     }
+
+     .gate:checked + .h2-type + .discussion-text {
+      display: block;
+      border: 1px none;
+    }
+
+     .gate:checked ~ .discussion-text{
+      display: block;
+     }
+
+   
+     .fullindent{
+      font-family:"Asul", serif;
+      font-weight: 400;
+      font-style: normal; 
+      font-size: 16px;
+      color: #c21004;
+      max-width: 1300px;
+      margin:0;
+      padding-left: 4em;
+      
+      
+    }
+
+    #centre{
+      font-weight: 700;
+      text-align: center;
+    }
+   
+    #purple{
+      color:purple;
+    }
+    
+    #lightblue{
+      color:rgb(0, 102, 236);
+
+    }
+
+    .pnomargin{
+      margin:0;
+      text-indent: 4em;
+    }
+
+ .h2{
+    border-bottom: 1px solid #c21004;
+    box-sizing: border-box;
+    
+}
+
+
+ .view-sharedfile{
     display: block;
   }
   
-  .h2-box{
-    display: block;
+  .view-interview{
+     display: block;
   }
-  
+
   .h2-type{
      display: block;
     cursor: pointer;
      font-family:"Asul", serif;
       font-weight: 400;
       font-style: normal; 
-      padding-left: 2%;
-      text-align: left;
-      font-size: 25px;
+      text-align: center;
+      font-size: 20px;
+      padding: 8px;
+      margin:0;
+      margin-bottom: -1px;
       color: #c21004;
+      border-bottom: 1px solid #c21004;
+      box-sizing: border-box;
+      
   }
     
-    h2{
-      font-family:"Asul", serif;
-      font-weight: 700;
-      font-style: normal; 
-      font-size: 25px;
-      color: #c21004;
-      text-align: center;
-      margin-bottom: 10%;
-    }
+   .h2-type:hover{
+    background-color:#c21004;
+    color: white;
+    border-top: 1px solid white;
+    margin-top: -1px;
+   }
 
-    .title{
-       font-family:"Asul", serif;
-      font-weight: 700;
-      font-style: normal; 
-      font-size: 25px;
-      color: #c21004;
-      text-align: left;
-      line-height: 95%;
+   .h1-box:hover{
+    border-left: 1px solid white;
+    margin-left: -1px;
+    border-right: 2px solid white;
+    margin-right: -1px;
+   }
+  
+    .link-text:hover{
+   text-decoration: none;
+   }
 
-    }
 
-    h4{
-       font-family:"Asul", serif;
-      font-weight: 400;
-      font-style: normal; 
-      font-size: 20px;
-      color: #c21004;
-      margin-left: 18%;
-      margin-top: -75px;
-     
-    
-    }
-
-    .bold2{
-      font-family:"Asul", serif;
-      font-weight: 700;
-      font-style: normal; 
-      font-size: 20px;
-      color: #c21004;
-      margin-bottom: 75px;
-    }
-
-    
-    .navbar {
-    display: flex;
-    height: 40px; 
-    border: 1px solid #c21004; 
-    justify-content: center;
-
-}
-
-#nav-title1:checked ~ .navbar label[for="nav-title1"],
-#nav-title2:checked ~ .navbar label[for="nav-title2"] 
-{
-    font-family:"Asul", serif;
-      font-weight: 400;
-      font-style: normal; 
-      font-size: 24px;
-    justify-content: center;
-    align-items: center;
-    text-decoration: underline;
-    color: #c21004;
+#tab-sharedfile:checked ~ .navbar label[for="tab-sharedfile"],
+#tab-socialmediapost:checked ~ .navbar label[for="tab-socialmediapost"],
+#tab-interview:checked ~ .navbar label[for="tab-interview"],
+#tab-about:checked ~ .navbar label[for="tab-about"]
+{   background-color: #c21004;
+    color: white;
     text-decoration: none;
-    border-right: 1px solid  #c21004;
-    transition: background 0.3s ease;
+    
 }
+
+.view{display: none; }
+  #tab-sharedfile:checked ~ .content-container #view-sharedfile {display: block;}
+  #tab-socialmediapost:checked ~ .content-container #view-socialmediapost {display: block;}
+  #tab-interview:checked ~ .content-container #view-interview {display: block;}
+  #tab-about:checked ~ .content-container #view-about {display: block;}
 
 .h1-box{
     font-family:"Asul", serif;
       font-weight: 400;
       font-style: normal; 
-      font-size: 24px;
-    justify-content: center;
-    align-items: center;
+      font-size: 20px;
     color: #c21004;
+    background-color: white;
+    border:none;
     border-right: 1px solid  #c21004;
     transition: background 0.3s ease;
     text-decoration: underline;
     flex: 1;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
+    display: flex;
+    padding:5px 0;
+    justify-content: center;
+    align-items: center;
     text-align: center;
     cursor: pointer;
+    box-sizing: border-box;
+
+}
+.h1-box:last-child{
+  border-right:none;
 }
 
-.gate:checked{
-    background-color: var(--red);
-    color: var(--white);
+.h1-box:first-child{
+  border-left:none;
 }
 
-.tab-content {
-    font-family:"Asul", serif;
-      font-weight: 400;
-      font-style: normal; 
-      font-size: 24px;
-    display: grid; 
-    border-top: 1px solid  #c21004;
-    border-left: 1px solid  #c21004;
-    border-right: 1px solid  #c21004;
-    background:#c21004
-    min-height: 500px;
- 
+.gate {
+    display: none;
 }
 
-.tab-content.active {
-    display: block; 
-}
     
     
 .content-row {
@@ -209,10 +359,4 @@
 }
 
 
-.event summary{
-    margin:5%;
-    position:relative
 
-
-
-}
