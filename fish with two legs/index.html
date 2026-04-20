@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回南天 - 视觉诗 (AI 摄像头版)</title>
+    <style>
+        @font-face {
+        font-family: 'AquawaxFx'; /* 你给这个字体起的名字，后面调用就用这个名字 */
+        src: url('Aquawax-Fx-Extralight-TRIAL.ttf') format('truetype'); /* 这里填你实际的字体文件名 */
+        /* 如果你的文件是 .otf 格式，format 里面就写 'opentype' */
+        /* 如果你的文件是 .woff 格式，format 里面就写 'woff' */
+        font-weight: normal;
+        font-style: normal;
+    }
+        body, html { margin: 0; 
+        padding: 0; 
+        width: 100%; 
+        height: 100%; 
+        background-color: #8fb1b5; 
+        font-family: 'AquawaxFx', serif; }
+
+        #text-layer {
+            position: absolute; 
+            top: 2%; 
+            left: 2%; 
+            right: 6%;
+            width: 100%; 
+            height:100%; 
+            padding: 2%; 
+            box-sizing: border-box; 
+            color: #2c4a4d; 
+            font-size: 36px; 
+            line-height: 1.6; 
+            z-index: 1; 
+            display: flex; 
+            align-items: left; 
+            justify-content: center;
+        }
+        .content { max-width: 1900px; }
+        #fog-canvas { position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 2; 
+            cursor: crosshair; 
+            opacity:0;
+        }
+       
+        #video-element { display: none; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div id="text-layer">
+        <div class="content">
+            In spring, there are no human live in the city of Guangzhou. We are all fish with two legs. We press our finger against the wall, tracing a circle, drawing two dots within it, adding an arc, and we see water dripping down from every stroke we drew. A melting smiley face. The floor is always wet. Some of us tried to mop the floor to dry it up, but it never works. Mopping just rearranges the water droplets. Those tiny droplets gather and form larger ones. The floor never dries, and we have to step on the freshly mopped surface, leaving a trace of dirty footprints. We try to mop and wipe away these footprints, but the floor never dry. We will always leave a new trail of dirty footprints. We walk on tile floor, we think about each step we take. If we take the step too fast, we will slip and fall on the floor that never fully dries out from the last mopping; if we lift our feet too low, we will scrape against the floor, making a sharp high-pitched noise, like the sound of fingernail scratching a blackboard. Our clothes never dry. The laundry washed a week ago still hangs on the balcony. Or maybe the clothes dry a bit, and get soaked again by spring storm. Those clothes stink. <br>The spring in Guangzhou is teal. It is the color of the never ending rain, of the humidity in the air, of the hazy mist on the window glass with greenery behind. We live in water. We swim in water. We see bubble in the air.
+
+        </div>
+    </div>
+
+    <canvas id="fog-canvas"></canvas>
+    <video id="video-element" autoplay playsinline></video>
+
+   <script>
+        const canvas = document.getElementById('fog-canvas');
+        const ctx = canvas.getContext('2d');
+        const videoElement = document.getElementById('video-element');
+        const offScreenCanvas = document.createElement('canvas');
+        const offScreenCtx = offScreenCanvas.getContext('2d');
+
+        // 【新增】计时器变量
+        const startTime = Date.now();
+        const FOG_DURATION = 15000; // 30秒，单位毫秒
+        const MAX_BLUR = 25;        // 30秒后的最大模糊程度（像素）
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            offScreenCanvas.width = window.innerWidth;
+            offScreenCanvas.height = window.innerHeight;
+            // 初始时先刷上一层底色，防止一开始擦除没反应
+            ctx.fillStyle = 'rgba(200, 215, 215, 1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 水滴粒子系统
+        let drips = []; 
+        class Drip {
+            constructor(x, y, radius = 5) {
+                this.x = x; this.y = y; this.velocity = Math.random() * 1.5 + 0.5; this.radius = Math.random() * (radius * 0.8) + 2;
+            }
+            update() {
+                this.y += this.velocity; this.velocity += 0.05;
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'black'; ctx.fill();
+                return this.y < canvas.height; 
+            }
+        }
+
+    
+        function applyGaussianAddingFog(x, y, radius, blurFactor = 0.15) {
+            offScreenCtx.clearRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);
+            
+            const blurAmount = radius * blurFactor; 
+            offScreenCtx.filter = `blur(${blurAmount}px)`;
+            
+            // C: 这里依然要画一个实心的圆（用来做橡皮擦的形状），颜色无所谓
+            offScreenCtx.beginPath();
+            offScreenCtx.arc(x, y, radius, 0, Math.PI * 2);
+            offScreenCtx.fillStyle = 'black'; 
+            offScreenCtx.fill();
+            
+            // D: 【关键修改】把叠加模式改成擦除模式！
+            // 拿着离屏画好的高斯模糊圆，去主 Canvas 上擦除雾气
+            ctx.globalCompositeOperation = 'destination-out'; 
+            ctx.drawImage(offScreenCanvas, 0, 0);
+        }
+
+        // 【新增】用来记忆上一次手指/手掌的位置
+        let lastHandX = null;
+        let lastHandY = null;
+
+        // 用于手指擦拭的通用函数 (升级为连贯线条)
+        function handleFingerErase(x, y, radius, produceWaterDrop = true) {
+            ctx.globalCompositeOperation = 'destination-out';
+            
+            // 只有当有上一个坐标时，才画连线
+            if (lastHandX !== null && lastHandY !== null) {
+                ctx.beginPath();
+                ctx.moveTo(lastHandX, lastHandY); // 从上一个点开始
+                ctx.lineTo(x, y);                 // 连线到当前点
+                ctx.lineWidth = radius * 2;       // 线条粗细等于半径的两倍
+                ctx.lineCap = 'round';            // 让线条的开头和结尾是圆润的
+                ctx.lineJoin = 'round';           // 让线条的转折处是圆润的
+                
+                // 利用阴影属性来模拟原本径向渐变带来的“边缘羽化/柔和”效果
+                ctx.shadowColor = 'black';
+                ctx.shadowBlur = radius * 0.5;
+                
+                ctx.strokeStyle = 'black';        // 橡皮擦的颜色（其实是擦除，颜色无所谓，必须是不透明的）
+                ctx.stroke();                     // 执行画线
+                
+                // 画完立刻清空阴影，以免影响水滴和其他绘制
+                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'transparent';
+            } else {
+                // 如果是手刚伸进来的第一帧，先画一个单独的圆润色点
+                ctx.beginPath(); 
+                ctx.arc(x, y, radius, 0, Math.PI * 2); 
+                ctx.fillStyle = 'black'; 
+                ctx.fill();
+            }
+
+            // 更新上一次的坐标为当前坐标，给下一帧连线用
+            lastHandX = x;
+            lastHandY = y;
+
+            // 产生水滴的逻辑保持不变 (稍微增加了点概率让连线时水滴更明显)
+            if (produceWaterDrop && Math.random() < 0.07) { 
+                drips.push(new Drip(x + (Math.random() - 0.5) * radius, y, radius * 0.5));
+            }
+        }
+
+        // 初始化 Holistic 模型
+        const holistic = new Holistic({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`});
+        holistic.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+        holistic.onResults((results) => {
+            // 1. 手指/手掌检测 (擦拭)
+            if (results.rightHandLandmarks) {
+                const tip = results.rightHandLandmarks[8];
+                const middle = results.rightHandLandmarks[12];
+                const x = (1 - tip.x) * canvas.width;
+                const y = tip.y * canvas.height;
+                const distance = Math.abs(tip.x - middle.x) + Math.abs(tip.y - middle.y);
+                
+                if (distance > 0.08) {
+                    handleFingerErase(x, y, 60, true); // 手掌擦拭
+                } else {
+                    handleFingerErase(x, y, 20, true); // 单指擦拭
+                }
+            }
+
+            // 2. 嘴巴哈气检测 (增加模糊)
+            if (results.faceLandmarks) {
+                const upperLip = results.faceLandmarks[13]; 
+                const lowerLip = results.faceLandmarks[14]; 
+                const mouthOpenAmount = lowerLip.y - upperLip.y;
+
+                if (mouthOpenAmount > 0.04) {
+                    const mouthX = (1 - upperLip.x) * canvas.width;
+                    const mouthY = upperLip.y * canvas.height;
+                    
+                    // ---这里是接入新增核心函数的地方---
+                    // 张嘴哈气，瞬间在面部位置增加一块高斯模糊的水雾
+                    applyGaussianAddingFog(mouthX, mouthY, 200); 
+                }
+            }
+        });
+
+        // 启动摄像头
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await holistic.send({image: videoElement}); },
+            width: 640, height: 480
+        });
+        camera.start();
+
+        // 【关键修改】：核心动画循环：控制 30 秒的演变
+        function animate() {
+            // 1. 计算进度 (0.0 到 1.0)
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(1, elapsed / FOG_DURATION);
+
+            // 2. 【关键】：通过 CSS 属性，让 Canvas（水雾层）的不透明度从 0 变到 进度值
+            // 这意味着 30 秒后，Canvas 会完全盖住文字
+            canvas.style.opacity = progress;
+
+            // 3. 【关键】：全局持续起雾
+            // 不管用户擦除了哪里，这里都会每帧涂上一层极薄的半透明灰白色
+            // 让你擦清晰的地方，也按照设定速度重新变模糊
+            ctx.globalCompositeOperation = 'source-over';
+            // 重新起雾的速度基于进度，随着时间增加而稍微变强
+            const fogDensity = 0.0003 + (progress * 0.007); 
+            ctx.fillStyle = `rgba(230, 240, 240, ${fogDensity})`; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 4. 更新水滴粒子
+            for (let i = drips.length - 1; i >= 0; i--) {
+                if (!drips[i].update()) drips.splice(i, 1);
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
