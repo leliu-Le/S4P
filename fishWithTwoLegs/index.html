@@ -18,25 +18,21 @@
         background-color: #8fb1b5; 
         font-family: 'AquawaxFx', serif; }
 
-        #text-layer {
-            position: absolute; 
-            top: 2%; 
-            left: 2%; 
-            right: 6%;
-            width: 100%; 
-            height:100%; 
-            padding: 2%; 
+       #text-layer {
+            padding: 40px 6% 40px 40px; 
             box-sizing: border-box; 
             color: #2c4a4d; 
             font-size: 36px; 
             line-height: 1.6; 
             z-index: 1; 
             display: flex; 
-            align-items: left; 
+            align-items: flex-start; 
             justify-content: center;
         }
+
         .content { max-width: 1900px; }
-        #fog-canvas { position: absolute; 
+        #fog-canvas { 
+            position: fixed; 
             top: 0; 
             left: 0; 
             width: 100%; 
@@ -73,7 +69,7 @@
 
         // 【新增】计时器变量
         const startTime = Date.now();
-        const FOG_DURATION = 15000; // 30秒，单位毫秒
+        const FOG_DURATION = 15000; // 30秒，单位毫秒 (注: 变量值现在是 15000，即 15 秒)
         const MAX_BLUR = 25;        // 30秒后的最大模糊程度（像素）
 
         function resizeCanvas() {
@@ -109,15 +105,12 @@
             const blurAmount = radius * blurFactor; 
             offScreenCtx.filter = `blur(${blurAmount}px)`;
             
-            // C: 这里依然要画一个实心的圆（用来做橡皮擦的形状），颜色无所谓
             offScreenCtx.beginPath();
             offScreenCtx.arc(x, y, radius, 0, Math.PI * 2);
-            offScreenCtx.fillStyle = 'black'; 
+            offScreenCtx.fillStyle = 'rgba(200, 215, 215, 1)'; 
             offScreenCtx.fill();
             
-            // D: 【关键修改】把叠加模式改成擦除模式！
-            // 拿着离屏画好的高斯模糊圆，去主 Canvas 上擦除雾气
-            ctx.globalCompositeOperation = 'destination-out'; 
+            ctx.globalCompositeOperation = 'source-over'; 
             ctx.drawImage(offScreenCanvas, 0, 0);
         }
 
@@ -161,43 +154,55 @@
             lastHandY = y;
 
             // 产生水滴的逻辑保持不变 (稍微增加了点概率让连线时水滴更明显)
-            if (produceWaterDrop && Math.random() < 0.07) { 
+            if (produceWaterDrop && Math.random() < 0.04) { 
                 drips.push(new Drip(x + (Math.random() - 0.5) * radius, y, radius * 0.5));
             }
         }
 
-        // 初始化 Holistic 模型
+      // 【优化1】：将 modelComplexity 改为 0，极大降低延迟，提升灵敏度
         const holistic = new Holistic({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`});
-        holistic.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        holistic.setOptions({ 
+            modelComplexity: 0, 
+            smoothLandmarks: true, 
+            minDetectionConfidence: 0.5, 
+            minTrackingConfidence: 0.5 
+        });
 
         holistic.onResults((results) => {
             // 1. 手指/手掌检测 (擦拭)
             if (results.rightHandLandmarks) {
-                const tip = results.rightHandLandmarks[8];
-                const middle = results.rightHandLandmarks[12];
+                const tip = results.rightHandLandmarks[8];    // 食指尖
+                const middleTip = results.rightHandLandmarks[12]; // 中指尖
+                const middleKnuckle = results.rightHandLandmarks[10]; // 中指的中间关节
+                
                 const x = (1 - tip.x) * canvas.width;
                 const y = tip.y * canvas.height;
-                const distance = Math.abs(tip.x - middle.x) + Math.abs(tip.y - middle.y);
                 
-                if (distance > 0.08) {
-                    handleFingerErase(x, y, 60, true); // 手掌擦拭
+                // 【优化2】：更科学的判断逻辑
+                // 只要中指指尖的 Y 坐标 大于 中指关节的 Y 坐标（在屏幕上也就是指尖朝下，弯回了手心）
+                // 我们就极其肯定用户握起了拳头，只伸出了食指！
+                const isMiddleFingerFolded = middleTip.y > middleKnuckle.y;
+                
+                if (isMiddleFingerFolded) {
+                    // 中指收起，单指模式（细线条）
+                    handleFingerErase(x, y, 20, true); 
                 } else {
-                    handleFingerErase(x, y, 20, true); // 单指擦拭
+                    // 中指伸直，手掌模式（粗线条）
+                    handleFingerErase(x, y, 60, true); 
                 }
+            } else {
+                lastHandX = null;
+                lastHandY = null;
             }
 
-            // 2. 嘴巴哈气检测 (增加模糊)
+            // 2. 嘴巴哈气检测 (保持不变)
             if (results.faceLandmarks) {
                 const upperLip = results.faceLandmarks[13]; 
                 const lowerLip = results.faceLandmarks[14]; 
-                const mouthOpenAmount = lowerLip.y - upperLip.y;
-
-                if (mouthOpenAmount > 0.04) {
+                
+                if ((lowerLip.y - upperLip.y) > 0.04) {
                     const mouthX = (1 - upperLip.x) * canvas.width;
                     const mouthY = upperLip.y * canvas.height;
-                    
-                    // ---这里是接入新增核心函数的地方---
-                    // 张嘴哈气，瞬间在面部位置增加一块高斯模糊的水雾
                     applyGaussianAddingFog(mouthX, mouthY, 200); 
                 }
             }
