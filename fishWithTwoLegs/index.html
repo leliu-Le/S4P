@@ -41,24 +41,13 @@
        
         #video-element { display: none; }
 
-        /* 【修改】：初始禁止点击，光标默认 */
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #8fb1b5; z-index: 100000; 
             display: flex; align-items: center; justify-content: center;
             color: #2c4a4d; font-size: 24px; letter-spacing: 2px;
-            pointer-events: none; 
+            cursor: pointer; 
             transition: opacity 1.5s ease-in-out; 
-        }
-
-        /* 【新增】：loading 的呼吸灯动画 */
-        @keyframes pulse {
-            0% { opacity: 0.3; }
-            50% { opacity: 1; }
-            100% { opacity: 0.3; }
-        }
-        .loading-pulse {
-            animation: pulse 1.5s infinite ease-in-out;
         }
 
         #instructions {
@@ -70,7 +59,7 @@
             font-size: 24px; 
             line-height: 1.5;
             z-index: 3;
-            opacity: 0; 
+            opacity: 0;
             pointer-events: none; 
             text-align: center;
             letter-spacing: 2px;
@@ -95,9 +84,7 @@
 </head>
 <body>
 
-    <div id="start-overlay">
-        <span id="start-text" class="loading-pulse">loading...</span>
-    </div>
+    <div id="start-overlay">click to enter</div>
 
     <div id="text-layer">
         <div class="content">
@@ -106,7 +93,7 @@
     </div>
 
     <div id="instructions">
-        try pointing and pinching, moving your palm, <br>or opening your mouth
+        try pointing and pinching, moving your palm,<br>or opening your mouth
     </div>
 
     <canvas id="fog-canvas"></canvas>
@@ -125,10 +112,6 @@
         const cursorElement = document.getElementById('cursor'); 
         const bgm = document.getElementById('bgm');
         const instructionsElement = document.getElementById('instructions');
-        
-        // 【新增】：获取遮罩层元素
-        const startOverlay = document.getElementById('start-overlay');
-        const startText = document.getElementById('start-text');
 
         const startTime = Date.now();
         const FOG_DURATION = 15000; 
@@ -138,10 +121,10 @@
         
         let audioUnlocked = false; 
         let musicStarted = false;
+        
         let hintDismissed = false; 
 
-        // 【修改】：点击遮罩层逻辑
-        startOverlay.addEventListener('click', function() {
+        document.getElementById('start-overlay').addEventListener('click', function() {
             this.style.opacity = '0'; 
             setTimeout(() => {
                 this.style.display = 'none'; 
@@ -149,6 +132,7 @@
             
             audioUnlocked = true; 
             
+            // 【核心修改】：点击遮罩层后，立即播放音乐
             if (!musicStarted) {
                 bgm.play();
                 musicStarted = true;
@@ -179,6 +163,7 @@
             }
         }
 
+        // 统一的触发音乐函数保留作为备用保险机制，防止某些浏览器在点击时未能立即加载音频
         function triggerMusic() {
             if (audioUnlocked && !musicStarted) {
                 bgm.play();
@@ -249,17 +234,6 @@
 
         const holistic = new Holistic({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`});
         holistic.setOptions({ modelComplexity: 0, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-
-        // 【核心修改】：监听 AI 模型是否下载/加载完毕
-        holistic.initialize().then(() => {
-            // 模型加载成功！
-            // 1. 去掉呼吸灯动画，改写文字为 click to enter
-            startText.classList.remove('loading-pulse');
-            startText.innerText = 'click to enter';
-            // 2. 允许用户点击，并将鼠标指针变为可点击的小手
-            startOverlay.style.pointerEvents = 'auto';
-            startOverlay.style.cursor = 'pointer';
-        });
 
         holistic.onResults((results) => {
             if (results.rightHandLandmarks) {
