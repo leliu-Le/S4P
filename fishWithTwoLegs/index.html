@@ -41,20 +41,42 @@
        
         #video-element { display: none; }
 
+        /* 【修改】：初始禁止点击，光标默认 */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #8fb1b5; z-index: 100000; 
+            display: flex; align-items: center; justify-content: center;
+            color: #2c4a4d; font-size: 24px; letter-spacing: 2px;
+            pointer-events: none; 
+            transition: opacity 1.5s ease-in-out; 
+        }
+
+        /* 【新增】：loading 的呼吸灯动画 */
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        .loading-pulse {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
         #instructions {
             position: fixed;
-            top: 1%;
-            right: 1%;
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: #2c4a4d;
-            font-size: 16px; 
-            line-height: 1;
+            font-size: 24px; 
+            line-height: 1.5;
             z-index: 3;
-            opacity: 0.5;
+            opacity: 0; 
             pointer-events: none; 
-            text-align: right;
+            text-align: center;
             letter-spacing: 2px;
             text-transform: lowercase;
             font-family: 'AquawaxFx', serif;  
+            transition: opacity 3s ease-in-out; 
         }
 
         #cursor {
@@ -73,6 +95,10 @@
 </head>
 <body>
 
+    <div id="start-overlay">
+        <span id="start-text" class="loading-pulse">loading...</span>
+    </div>
+
     <div id="text-layer">
         <div class="content">
             In spring, there are no human live in the city of Guangzhou. We are all fish with two legs. We press our finger against the wall, tracing a circle, drawing two dots within it, adding an arc, and we see water dripping down from every stroke we drew. A melting smiley face. The floor is always wet. Some of us tried to mop the floor to dry it up, but it never works. Mopping just rearranges the water droplets. Those tiny droplets gather and form larger ones. The floor never dries, and we have to step on the freshly mopped surface, leaving a trace of dirty footprints. We try to mop and wipe away these footprints, but the floor never dry. We will always leave a new trail of dirty footprints. We walk on tile floor, we think about each step we take. If we take the step too fast, we will slip and fall on the floor that never fully dries out from the last mopping; if we lift our feet too low, we will scrape against the floor, making a sharp high-pitched noise, like the sound of fingernail scratching a blackboard. Our clothes never dry. The laundry washed a week ago still hangs on the balcony. Or maybe the clothes dry a bit, and get soaked again by spring storm. Those clothes stink. The spring in Guangzhou is teal. It is the color of the never ending rain, of the humidity in the air, of the hazy mist on the window glass with greenery behind. We live in water. We swim in water. We see bubble in the air.
@@ -80,11 +106,13 @@
     </div>
 
     <div id="instructions">
-        Try pointing and pinching, moving your palm, or opening your mouth
+        try pointing and pinching, moving your palm, <br>or opening your mouth
     </div>
 
     <canvas id="fog-canvas"></canvas>
     <video id="video-element" autoplay playsinline></video>
+    
+    <audio id="bgm" src="foggy sound.mp4" loop></audio>
     
     <div id="cursor"></div>
 
@@ -95,12 +123,37 @@
         const offScreenCanvas = document.createElement('canvas');
         const offScreenCtx = offScreenCanvas.getContext('2d');
         const cursorElement = document.getElementById('cursor'); 
+        const bgm = document.getElementById('bgm');
+        const instructionsElement = document.getElementById('instructions');
+        
+        // 【新增】：获取遮罩层元素
+        const startOverlay = document.getElementById('start-overlay');
+        const startText = document.getElementById('start-text');
 
         const startTime = Date.now();
         const FOG_DURATION = 15000; 
         const FOG_COLOR = '200, 215, 215';
 
         let lastInteractionTime = Date.now();
+        
+        let audioUnlocked = false; 
+        let musicStarted = false;
+        let hintDismissed = false; 
+
+        // 【修改】：点击遮罩层逻辑
+        startOverlay.addEventListener('click', function() {
+            this.style.opacity = '0'; 
+            setTimeout(() => {
+                this.style.display = 'none'; 
+            }, 1500);
+            
+            audioUnlocked = true; 
+            
+            if (!musicStarted) {
+                bgm.play();
+                musicStarted = true;
+            }
+        });
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -126,8 +179,20 @@
             }
         }
 
+        function triggerMusic() {
+            if (audioUnlocked && !musicStarted) {
+                bgm.play();
+                musicStarted = true; 
+            }
+        }
+
         function applyGaussianAddingFog(x, y, radius, blurFactor = 0.15) {
             lastInteractionTime = Date.now();
+            triggerMusic(); 
+            
+            if (Date.now() - startTime >= FOG_DURATION) {
+                hintDismissed = true;
+            }
 
             offScreenCtx.clearRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);
             const blurAmount = radius * blurFactor; 
@@ -147,6 +212,11 @@
 
         function handleFingerErase(x, y, radius, produceWaterDrop = true) {
             lastInteractionTime = Date.now();
+            triggerMusic(); 
+            
+            if (Date.now() - startTime >= FOG_DURATION) {
+                hintDismissed = true;
+            }
 
             ctx.globalCompositeOperation = 'destination-out';
             if (lastHandX !== null && lastHandY !== null) {
@@ -179,6 +249,17 @@
 
         const holistic = new Holistic({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`});
         holistic.setOptions({ modelComplexity: 0, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+        // 【核心修改】：监听 AI 模型是否下载/加载完毕
+        holistic.initialize().then(() => {
+            // 模型加载成功！
+            // 1. 去掉呼吸灯动画，改写文字为 click to enter
+            startText.classList.remove('loading-pulse');
+            startText.innerText = 'click to enter';
+            // 2. 允许用户点击，并将鼠标指针变为可点击的小手
+            startOverlay.style.pointerEvents = 'auto';
+            startOverlay.style.cursor = 'pointer';
+        });
 
         holistic.onResults((results) => {
             if (results.rightHandLandmarks) {
@@ -252,6 +333,12 @@
 
             canvas.style.opacity = progress;
 
+            if (progress === 1 && !hintDismissed) {
+                instructionsElement.style.opacity = '0.6'; 
+            } else {
+                instructionsElement.style.opacity = '0'; 
+            }
+
             ctx.globalCompositeOperation = 'source-over';
             let fogDensity = 0.003 + (progress * 0.012); 
             const idleTime = Date.now() - lastInteractionTime;
@@ -279,6 +366,7 @@
         }
 
         animate();
+
     </script>
 </body>
 </html>
